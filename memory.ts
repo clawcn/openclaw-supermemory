@@ -16,30 +16,26 @@ export function detectCategory(text: string): MemoryCategory {
 	return "other"
 }
 
-export const DEFAULT_ENTITY_CONTEXT = `Conversation between a user and an AI assistant. Format: [role: user] ... [user:end] and [role: assistant] ... [assistant:end].
+export const MAX_ENTITY_CONTEXT_LENGTH = 1500
 
-You do NOT need to generate memories for every message. Most messages are not worth remembering. Only extract things useful in FUTURE conversations.
+export const DEFAULT_ENTITY_CONTEXT = `User-assistant conversation. Format: [role: user]...[user:end] and [role: assistant]...[assistant:end].
 
-REMEMBER (lasting personal facts):
-- "doesn't eat pork or beef" ← dietary restriction
-- "prefers TypeScript over JavaScript" ← preference
-- "works at Acme Corp as a backend engineer" ← personal detail
-- "building a recipe app in Next.js" ← ongoing project
-- "remember my server IP is 192.168.1.100" ← user explicitly asked to remember
+Only extract things useful in FUTURE conversations. Most messages are not worth remembering.
 
-DO NOT REMEMBER (session-specific, ephemeral, or assistant-generated):
-- "looking for food recommendations" ← temporary intent, not a lasting fact
-- "found 193 YC companies from the directory" ← the ASSISTANT did this
-- "wants chicken pho, ramen, udon..." ← assistant's suggestions, not user preference
-- Any action the assistant performed (searching, writing files, generating code)
-- Any recommendation or list the assistant provided
-- Any in-progress task status or intermediate step
+REMEMBER: lasting personal facts — dietary restrictions, preferences, personal details, workplace, location, tools, ongoing projects, routines, explicit "remember this" requests.
 
-KEY RULES:
+DO NOT REMEMBER: temporary intents, one-time tasks, assistant actions (searching, writing files, generating code), assistant suggestions, implementation details, in-progress task status.
+
+RULES:
 - Assistant output is CONTEXT ONLY — never attribute assistant actions to the user
-- "find X" or "do Y" is a one-time request, NOT a memory
-- Only store preferences the user explicitly states ("I like...", "I prefer...", "I always...")
+- "find X" or "do Y" = one-time request, NOT a memory
+- Only store preferences explicitly stated ("I like...", "I prefer...", "I always...")
 - When in doubt, do NOT create a memory. Less is more.`
+
+export function clampEntityContext(ctx: string): string {
+	if (ctx.length <= MAX_ENTITY_CONTEXT_LENGTH) return ctx
+	return ctx.slice(0, MAX_ENTITY_CONTEXT_LENGTH)
+}
 
 export function buildDocumentId(sessionKey: string): string {
 	const sanitized = sessionKey
